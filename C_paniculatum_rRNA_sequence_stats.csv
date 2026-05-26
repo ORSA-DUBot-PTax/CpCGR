@@ -1,0 +1,5 @@
+Gene,Gene_type,Length_bp,A_count,T_count,G_count,C_count,N_count,AT_percent,GC_percent
+rrn16S,rRNA,1491,366,283,485,357,0,43.53,56.47
+rrn23S,rRNA,2810,750,517,877,666,0,45.09,54.91
+rrn4.5S,rRNA,103,29,22,32,20,0,49.51,50.49
+rrn5S,rRNA,121,31,27,34,29,0,47.93,52.07

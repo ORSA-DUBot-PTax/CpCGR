@@ -1,0 +1,4 @@
+Gene_type,Number_of_sequences,Total_length_bp,Mean_length_bp,Mean_GC_percent,Mean_AT_percent
+Protein-coding gene,76,67119,883.14,38.19,61.81
+rRNA,4,4525,1131.25,53.48,46.52
+tRNA,28,2146,76.64,53.81,46.19
