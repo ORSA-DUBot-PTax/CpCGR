@@ -16,6 +16,11 @@ try:
 except Exception:
     px = None
 
+try:
+    from streamlit_pdf_viewer import pdf_viewer
+except Exception:
+    pdf_viewer = None
+
 
 # ============================================================
 # Page configuration
@@ -774,6 +779,11 @@ def parse_exon_intron_table() -> pd.DataFrame:
 
 
 def pdf_download_and_viewer(key: str, title: str):
+    """Download and preview PDFs in a deployment-friendly way.
+
+    Streamlit Community Cloud / Edge can block base64 data-PDF iframes.
+    The streamlit-pdf-viewer component avoids the Edge-blocked iframe issue.
+    """
     path = file_path(key)
     st.subheader(title)
     if not path.exists():
@@ -782,13 +792,24 @@ def pdf_download_and_viewer(key: str, title: str):
 
     show_download_button(path, f"Download {path.name}")
 
-    try:
-        pdf_bytes = path.read_bytes()
-        b64 = base64.b64encode(pdf_bytes).decode("utf-8")
-        st.markdown(
-            f'<iframe src="data:application/pdf;base64,{b64}" width="100%" height="650" type="application/pdf"></iframe>',
-            unsafe_allow_html=True,
+    if pdf_viewer is None:
+        st.info(
+            "PDF preview component is not installed on this deployment. "
+            "Add `streamlit-pdf-viewer` to requirements.txt, redeploy, "
+            "or use the download button above."
         )
+        return
+
+    try:
+        pdf_viewer(
+            str(path),
+            width=700,
+            height=650,
+            key=f"pdf_viewer_{key}",
+        )
+    except TypeError:
+        # Compatibility fallback for older versions of streamlit-pdf-viewer.
+        pdf_viewer(str(path), width=700, height=650)
     except Exception:
         st.info("PDF preview is unavailable in this browser. Please use the download button.")
 
