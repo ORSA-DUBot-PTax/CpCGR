@@ -111,12 +111,29 @@ def render_workflow_image():
     )
 
 
+def render_developer_footer():
+    """Render compact developer information in a fixed footer."""
+    st.markdown(
+        """
+        <div class="cpcgr-footer">
+            <div class="cpcgr-footer-main">
+                Developed by Sheikh Sunzid Ahmed and M. Oliur Rahman
+            </div>
+            <div class="cpcgr-footer-sub">
+                Plant Taxonomy and Ethnobotany Laboratory &bull; Department of Botany, University of Dhaka
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 st.markdown(
     """
     <style>
     .block-container {
         padding-top: 1.55rem;
-        padding-bottom: 0.75rem;
+        padding-bottom: 3.9rem;
         max-width: 1580px;
     }
     [data-testid="stSidebar"] {
@@ -206,6 +223,33 @@ st.markdown(
         border-radius: 9px;
         border: 1px solid #D8F3DC;
         box-shadow: 0 1px 5px rgba(27, 67, 50, 0.08);
+    }
+    .cpcgr-footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999;
+        background: rgba(246, 255, 248, 0.96);
+        border-top: 1px solid #B7E4C7;
+        box-shadow: 0 -2px 10px rgba(27, 67, 50, 0.06);
+        padding: 0.42rem 1rem 0.38rem 1rem;
+        text-align: center;
+        backdrop-filter: blur(6px);
+    }
+    .cpcgr-footer-main {
+        color: #1B4332;
+        font-size: 0.78rem;
+        line-height: 1.22;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+    }
+    .cpcgr-footer-sub {
+        color: #4A5C52;
+        font-size: 0.69rem;
+        line-height: 1.20;
+        font-weight: 600;
+        margin-top: 0.08rem;
     }
     @media (max-width: 1100px) {
         .workflow-img {
@@ -1268,3 +1312,9 @@ elif page == "Raw Files & Downloads":
         ],
     )
     st.text(read_text_file(preview_file, max_chars=15000))
+
+
+# ============================================================
+# Compact developer footer
+# ============================================================
+render_developer_footer()
