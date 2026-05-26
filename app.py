@@ -58,13 +58,13 @@ def render_home_intro_box():
     """Render compact home-page introduction."""
     st.markdown(
         """
-        <div class="cpcgr-intro">
-            CpCGR (<em>Clerodendrum paniculatum</em> Chloroplast Genome Resource) is an interactive web platform for
-            <em>Clerodendrum paniculatum</em> that provides access to assembled and annotated cp genome, its gene locations,
-            gene sequences, nucleotide composition, codon usage, SSR profiles,
-            exon-intron organization, mVISTA genome divergence, IR junction analysis,
-            phylogenetic inference, molecular dating outputs, and downloadable source files.
-        </div>
+	<div class="cpcgr-intro">
+    	<strong>CpCGR</strong> (<em>Clerodendrum paniculatum</em> Chloroplast Genome Resource) is an interactive web platform
+   	designed to explore the assembled and annotated chloroplast genome of <em>Clerodendrum paniculatum</em>. It provides
+    	integrated access to genome organization, gene coordinates, gene sequences, nucleotide composition, codon usage patterns,
+    	SSR profiles, exon-intron structure, mVISTA-based genome divergence, IR junction analysis, phylogenetic inference,
+    	molecular dating results, and downloadable source files.
+	</div>
         """,
         unsafe_allow_html=True,
     )
