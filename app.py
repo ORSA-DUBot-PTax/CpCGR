@@ -17,6 +17,11 @@ except Exception:
     px = None
 
 try:
+    import fitz  # PyMuPDF: renders PDF pages as images for reliable web display
+except Exception:
+    fitz = None
+
+try:
     from streamlit_pdf_viewer import pdf_viewer
 except Exception:
     pdf_viewer = None
@@ -138,7 +143,7 @@ st.markdown(
     <style>
     .block-container {
         padding-top: 1.55rem;
-        padding-bottom: 3.9rem;
+        padding-bottom: 4.8rem;
         max-width: 1580px;
     }
     [data-testid="stSidebar"] {
@@ -255,6 +260,15 @@ st.markdown(
         line-height: 1.20;
         font-weight: 600;
         margin-top: 0.08rem;
+    }
+
+    .pdf-image-preview img {
+        width: 100% !important;
+        height: auto !important;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(27, 67, 50, 0.08);
+        background: #FFFFFF;
     }
     @media (max-width: 1100px) {
         .workflow-img {
@@ -778,11 +792,36 @@ def parse_exon_intron_table() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def pdf_download_and_viewer(key: str, title: str):
-    """Download and preview PDFs in a deployment-friendly way.
+@st.cache_data(show_spinner=False)
+def render_pdf_pages_as_png(pdf_path_str: str, zoom: float = 2.4) -> list[bytes]:
+    """Render all pages of a PDF as PNG bytes.
 
-    Streamlit Community Cloud / Edge can block base64 data-PDF iframes.
-    The streamlit-pdf-viewer component avoids the Edge-blocked iframe issue.
+    This avoids browser-blocked PDF iframes and prevents partial/clipped PDF
+    views on deployed Streamlit apps, especially in Microsoft Edge.
+    """
+    if fitz is None:
+        return []
+
+    png_pages = []
+    doc = fitz.open(pdf_path_str)
+    try:
+        matrix = fitz.Matrix(zoom, zoom)
+        for page in doc:
+            pix = page.get_pixmap(matrix=matrix, alpha=False)
+            png_pages.append(pix.tobytes("png"))
+    finally:
+        doc.close()
+    return png_pages
+
+
+def pdf_download_and_viewer(key: str, title: str):
+    """Download and preview PDFs without iframe blocking or clipping.
+
+    Priority:
+    1. Render PDF pages as full-width images using PyMuPDF. This is the most
+       reliable option for deployed Streamlit apps and Microsoft Edge.
+    2. Fall back to streamlit-pdf-viewer if PyMuPDF is unavailable.
+    3. Always keep the download button available.
     """
     path = file_path(key)
     st.subheader(title)
@@ -792,27 +831,46 @@ def pdf_download_and_viewer(key: str, title: str):
 
     show_download_button(path, f"Download {path.name}")
 
-    if pdf_viewer is None:
-        st.info(
-            "PDF preview component is not installed on this deployment. "
-            "Add `streamlit-pdf-viewer` to requirements.txt, redeploy, "
-            "or use the download button above."
-        )
-        return
+    # Best deployment-safe preview: render PDF pages as images.
+    if fitz is not None:
+        try:
+            pages = render_pdf_pages_as_png(str(path), zoom=2.4)
+            if pages:
+                st.markdown('<div class="pdf-image-preview">', unsafe_allow_html=True)
+                for i, page_png in enumerate(pages, start=1):
+                    st.image(
+                        page_png,
+                        caption=f"{title} - page {i}" if len(pages) > 1 else None,
+                        use_container_width=True,
+                    )
+                st.markdown('</div>', unsafe_allow_html=True)
+                return
+        except Exception:
+            pass
 
-    try:
-        pdf_viewer(
-            str(path),
-            width=700,
-            height=650,
-            key=f"pdf_viewer_{key}",
-        )
-    except TypeError:
-        # Compatibility fallback for older versions of streamlit-pdf-viewer.
-        pdf_viewer(str(path), width=700, height=650)
-    except Exception:
-        st.info("PDF preview is unavailable in this browser. Please use the download button.")
+    # Optional fallback if the image-renderer dependency is missing.
+    if pdf_viewer is not None:
+        try:
+            pdf_viewer(
+                str(path),
+                width=520,
+                height=900,
+                key=f"pdf_viewer_{key}",
+            )
+            return
+        except TypeError:
+            try:
+                pdf_viewer(str(path), width=520, height=900)
+                return
+            except Exception:
+                pass
+        except Exception:
+            pass
 
+    st.info(
+        "PDF preview is unavailable on this deployment. "
+        "Please add `PyMuPDF` to requirements.txt and redeploy, or use the download button above."
+    )
 
 def download_all_available_files():
     st.subheader("Available source files")
