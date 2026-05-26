@@ -2,4 +2,5 @@ streamlit
 pandas
 plotly
 openpyxl
+PyMuPDF
 streamlit-pdf-viewer
